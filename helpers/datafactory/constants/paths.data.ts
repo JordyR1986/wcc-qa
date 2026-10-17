@@ -47,3 +47,10 @@ export enum AuthEndpoints {
 	ME = "/api/auth/me",
 	USERS = "/api/auth/users",
 }
+
+/** MailHog endpoints — relative to MAILHOG_HOST, not API_HOST. v2 reads, v1 deletes (v2 has no delete). */
+export enum MailHogEndpoints {
+	MESSAGES = "/api/v2/messages",
+	SEARCH = "/api/v2/search",
+	DELETE_MESSAGES = "/api/v1/messages",
+}
