@@ -74,6 +74,7 @@ Two-layer API design, aggregated by `APIService` (`helpers/apifactory/api.servic
   - **Always returns `TypedAPIResponse<T>`** so callers get a typed `.json()`. (Delete-style calls with no body return plain `APIResponse`.)
 - **`api.helper.ts`** — `TypedAPIResponse<T>` (typed `.json()`) and the `ensureSuccess(response)` guard.
 - **Fixtures** — `authApi` (X-API-KEY only) for public endpoints; `noApiKeyApi` / `invalidTokenApi` for the negative auth cases; `<role>Api` for authenticated roles; `apiForRole(role)` for role-matrix tests. Each is an `APIService` over a context with those headers; the context itself is reachable as `.request`. Tokens are cached per worker, so each role logs in at most once.
+- **`mailhog`** — `MailHogService` over its own context (`MAILHOG_HOST`, no headers) for email-delivery assertions. Deliberately **not** on `APIService`: that context targets the backend. Wait with `waitForMessagesTo(email)`, clean up with `deleteMessagesTo(email)`.
 
 **In tests:** call the service, assert the status when a specific code matters (201/204/409), then validate the body with `schema.parse(await response.json())`. Use `ensureSuccess: true` for the happy path; for negative cases leave it `false` and assert the status on the returned response.
 
@@ -248,5 +249,6 @@ All variables live in `tests/.env` (see `tests/.env.example`). Role credentials 
 | `API_HOST`                         | api project base URL                                                                                                                              |
 | `API_KEY`                          | X-API-KEY header (all API requests)                                                                                                               |
 | `ADMIN_BASE_URL`                   | admin project base URL (optional; defaults to `http://localhost:3000`)                                                                            |
+| `MAILHOG_HOST`                     | `mailhog` fixture base URL (optional; defaults to `http://localhost:8025`)                                                                        |
 
 `roles.data.ts` is the single source of truth for which roles exist — adding one there means adding its `.env` pair and its fixtures.

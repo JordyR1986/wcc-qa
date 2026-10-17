@@ -1,5 +1,7 @@
 import { test as base, APIRequestContext, PlaywrightWorkerArgs, TestFixture } from "@playwright/test";
 import { APIService } from "helpers/apifactory/api.service";
+import { MailHogClient } from "helpers/apifactory/clients/mailhog.client";
+import { MailHogService } from "helpers/apifactory/services/mailhog.service";
 import { USERS, Role } from "helpers/datafactory/constants/roles.data";
 import { INVALID_TOKEN } from "helpers/datafactory/constants/auth.data";
 
@@ -11,6 +13,7 @@ import { INVALID_TOKEN } from "helpers/datafactory/constants/auth.data";
  *   invalidTokenApi  X-API-KEY + unknown token asserting rejected sessions
  *   <role>Api        X-API-KEY + role's token  adminApi, leaderApi, mentorApi, mentorshipAdminApi
  *   apiForRole(role) same, for role-matrix tests
+ *   mailhog          no headers, MAILHOG_HOST  email delivery assertions (not an APIService: different host)
  *
  * Each service exposes its context as `.request` for endpoints without a service method.
  * Tokens are fetched once per worker and role.
@@ -25,6 +28,7 @@ type TestFixtures = {
 	leaderApi: APIService;
 	mentorApi: APIService;
 	mentorshipAdminApi: APIService;
+	mailhog: MailHogService;
 };
 
 type WorkerFixtures = {
@@ -35,6 +39,7 @@ type WorkerFixtures = {
 type Headers = Record<string, string>;
 
 const BASE_URL = process.env.API_HOST ?? "http://localhost:8080";
+const MAILHOG_BASE_URL = process.env.MAILHOG_HOST ?? "http://localhost:8025";
 
 /** Read lazily: the merged UI fixtures import this module without needing API_KEY. */
 function apiKeyHeaders(): Headers {
@@ -109,4 +114,10 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
 	leaderApi: async ({ apiForRole }, use) => use(await apiForRole(Role.LEADER)),
 	mentorApi: async ({ apiForRole }, use) => use(await apiForRole(Role.MENTOR)),
 	mentorshipAdminApi: async ({ apiForRole }, use) => use(await apiForRole(Role.MENTORSHIP_ADMIN)),
+
+	mailhog: async ({ playwright }, use) => {
+		const context = await playwright.request.newContext({ baseURL: MAILHOG_BASE_URL });
+		await use(new MailHogService(new MailHogClient(context)));
+		await context.dispose();
+	},
 });
