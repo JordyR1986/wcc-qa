@@ -26,6 +26,7 @@ export class MailHogService {
 		return response;
 	}
 
+	/** Deletes every message in the inbox, including other tests' — see {@link deleteMessagesTo} for per-recipient cleanup. */
 	async deleteAllMessages(ensureSuccess = false): Promise<APIResponse> {
 		const response = await this.client.deleteAllMessages();
 		if (ensureSuccess) assertSuccess(response);
