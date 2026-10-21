@@ -49,6 +49,7 @@ The suites run against the local Docker stack — see [Local setup](docs/README.
 npm test                  # everything: base phase, then the @ad-hoc phase (Docker + wcc-backend checkout)
 npm run test:api          # API tests — needs only the backend
 npm run test:admin        # admin UI tests — logs each role in first (setup project)
+npm run test:admin:smoke  # admin @smoke tests only — the pull request gate
 npm run test:api -- --grep @smoke
 
 npm run typecheck         # type-check without running tests
